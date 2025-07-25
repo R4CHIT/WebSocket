@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>message</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body>
+    <div class="flex justify-center items-center bg-gray-300 h-[100vh]">
+        <div class="flex flex-col justify-center items-center h-[80vh] w-[80vw] border bg-white">
+            <div class="h-full w-full overflow-y-scroll flex flex-col gap-2 p-4 px-3 border border-gray-300 rounded-lg">
+                
+
+                <!-- Your message -->
+                
+                <div class="flex justify-start">
+                    <div class="bg-gray-200 text-black px-4 py-2 rounded-xl max-w-xs">
+                        This is a message from someone else.
+                    </div>
+                </div>
+
+                <!-- Your message -->
+                <div class="flex justify-end">
+                    <div class="bg-blue-500 text-white px-4 py-2 rounded-xl max-w-xs">
+                        This is your message.
+                    </div>
+                </div>
+                
+            </div>
+           <div class="w-full py-4 flex justify-center">
+             <input type="text" class="w-[calc(100%-100px)] rounded-xl p-2 border" placeholder="Type a message...">
+
+           </div>
+        </div>
+    </div>
+</body>
+
+</html>
