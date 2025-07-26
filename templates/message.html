@@ -2,40 +2,106 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>message</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 <body>
     <div class="flex justify-center items-center bg-gray-300 h-[100vh]">
-        <div class="flex flex-col justify-center items-center h-[80vh] w-[80vw] border bg-white">
-            <div class="h-full w-full overflow-y-scroll flex flex-col gap-2 p-4 px-3 border border-gray-300 rounded-lg">
-                
+        <div class="flex flex-col h-[80vh] w-[80vw] border bg-white">
 
-                <!-- Your message -->
-                
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 text-black px-4 py-2 rounded-xl max-w-xs">
-                        This is a message from someone else.
-                    </div>
-                </div>
+            <!-- Room name -->
+            <div class="w-full bg-blue-500 text-white text-center py-2" id="room-name">
+                {{ room_name }}
+            </div>
 
-                <!-- Your message -->
+            <!-- Chat messages container -->
+            <div id="chat-container"
+                class="flex-1 w-full overflow-y-scroll flex flex-col gap-2 p-4 border-b border-gray-300">
+                {% for message in messages %}
+                {% if message.sender == username %}
                 <div class="flex justify-end">
                     <div class="bg-blue-500 text-white px-4 py-2 rounded-xl max-w-xs">
-                        This is your message.
+                        <strong>{{ message.sender }}</strong>: {{ message.message }}
                     </div>
                 </div>
-                
+                {% else %}
+                <div class="flex justify-start">
+                    <div class="bg-gray-200 text-black px-4 py-2 rounded-xl max-w-xs">
+                        <strong>{{ message.sender }}</strong>: {{ message.message }}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
             </div>
-           <div class="w-full py-4 flex justify-center">
-             <input type="text" class="w-[calc(100%-100px)] rounded-xl p-2 border" placeholder="Type a message...">
 
-           </div>
+            <!-- Message form -->
+            <div class="w-full px-4 py-3">
+                <form id="message-form" class="flex gap-2 w-full">
+                    {% csrf_token %}
+                    <input type="text" id="message-input" name="message" required
+                        class="flex-grow rounded-xl p-2 border focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="Type a message..." />
+                    <button type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition">Send</button>
+                </form>
+            </div>
         </div>
     </div>
+
+    <script>
+        const scrollToBottom = () => {
+            const container = document.getElementById('chat-container');
+            container.scrollTop = container.scrollHeight;
+        };
+
+        window.onload = scrollToBottom;
+
+        const websocketProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const roomName = document.getElementById('room-name').innerText.trim();
+        const username = "{{ username }}";
+
+        const chatSocket = new WebSocket(
+            `${websocketProtocol}://${window.location.host}/ws/chat/${roomName}/`
+        );
+
+        chatSocket.onopen = () => console.log("✅ WebSocket Connected");
+        chatSocket.onclose = () => console.log("❌ WebSocket Disconnected");
+
+        chatSocket.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            const container = document.getElementById('chat-container');
+            const msgDiv = document.createElement('div');
+            const isSelf = data.username === username;
+
+            msgDiv.className = `flex ${isSelf ? 'justify-end' : 'justify-start'}`;
+            msgDiv.innerHTML = `
+                <div class="${isSelf ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'} px-4 py-2 rounded-xl max-w-xs my-1">
+                    <strong>${data.username}</strong>: ${data.message}
+                </div>
+            `;
+
+            container.appendChild(msgDiv);
+            scrollToBottom();
+        };
+
+        document.getElementById('message-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value;
+
+            if (message.length > 0) {
+                chatSocket.send(JSON.stringify({
+                    message: message,
+                    username: username,
+                    room_name: roomName,
+                }));
+
+            }
+        });
+    </script>
 </body>
 
 </html>

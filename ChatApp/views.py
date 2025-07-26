@@ -18,4 +18,10 @@ def room(request):
     return render(request, 'room.html')
 
 def message(request,username,room_name):
-    return render(request, 'message.html')
+    messages = Room.objects.get(name=room_name).messages.all()
+    context = {
+        'username': username,
+        'room_name': room_name,
+        'messages': messages,
+    }
+    return render(request, 'message.html', context)
